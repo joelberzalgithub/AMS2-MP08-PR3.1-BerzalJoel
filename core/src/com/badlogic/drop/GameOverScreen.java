@@ -2,20 +2,26 @@ package com.badlogic.drop;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-public class MainMenuScreen implements Screen {
+public class GameOverScreen implements Screen {
     final Drop game;
-    OrthographicCamera camera;
+    int dropsGathered;
     Texture background;
+    OrthographicCamera camera;
+    Music endMusic;
 
-    public MainMenuScreen(final Drop game) {
+    public GameOverScreen(final Drop game, int dropsGathered) {
         this.game = game;
-        background = new Texture(Gdx.files.internal("backgroundMenu.jpg"));
+        this.dropsGathered = dropsGathered;
+        background = new Texture(Gdx.files.internal("backgroundGameOver.jpg"));
         camera = new OrthographicCamera();
         camera.setToOrtho(false, 800, 480);
+        endMusic = Gdx.audio.newMusic(Gdx.files.internal("end.wav"));
+        endMusic.play();
     }
 
     @Override
@@ -31,8 +37,21 @@ public class MainMenuScreen implements Screen {
 
         game.batch.begin();
         game.batch.draw(background, 0, 0);
-        game.font.draw(game.batch, "Welcome to Drop!!! ", 100, 150);
-        game.font.draw(game.batch, "Tap anywhere to begin!", 100, 100);
+        game.font.draw(game.batch, "Game Over", 100, 200);
+
+        switch (dropsGathered) {
+            case 0:
+                game.font.draw(game.batch, "You haven't collected any drop :(", 100, 150);
+                break;
+            case 1:
+                game.font.draw(game.batch, "You have collected a single drop :)", 100, 150);
+                break;
+            default:
+                game.font.draw(game.batch, "You have collected " + dropsGathered + " drops!!!", 100, 150);
+                break;
+        }
+
+        game.font.draw(game.batch, "Tap anywhere to start again!", 100, 100);
         game.batch.end();
 
         if (Gdx.input.isTouched()) {
@@ -60,5 +79,6 @@ public class MainMenuScreen implements Screen {
     @Override
     public void dispose() {
         background.dispose();
+        endMusic.dispose();
     }
 }

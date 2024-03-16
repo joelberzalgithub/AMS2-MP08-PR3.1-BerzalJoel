@@ -20,6 +20,7 @@ public class GameScreen implements Screen {
     final Drop game;
     Texture dropImage;
     Texture bucketImage;
+    Texture background;
     Sound dropSound;
     Music rainMusic;
     OrthographicCamera camera;
@@ -34,6 +35,9 @@ public class GameScreen implements Screen {
         // Carreguem les imatges de la gota i la galleda (64x64 píxels cadascuna)
         dropImage = new Texture(Gdx.files.internal("droplet.png"));
         bucketImage = new Texture(Gdx.files.internal("bucket.png"));
+
+        // Carreguem la imatge de fons
+        background = new Texture(Gdx.files.internal("backgroundGame.jpg"));
 
         // Carreguem l'efecte de so de la gota i la "música" de fons de la pluja
         dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.wav"));
@@ -82,7 +86,9 @@ public class GameScreen implements Screen {
 
         // Comencem un nou lot i dibuixem la galleda i totes les gotes
         game.batch.begin();
+        game.batch.draw(background, 0, 0);
         game.font.draw(game.batch, "Drops Collected: " + dropsGathered, 0, 480);
+        game.font.draw(game.batch, "FPS: " + Gdx.graphics.getFramesPerSecond(), 725, 480);
         game.batch.draw(bucketImage, bucket.x, bucket.y, bucket.width, bucket.height);
         for (Rectangle raindrop : raindrops) {
             game.batch.draw(dropImage, raindrop.x, raindrop.y);
@@ -119,9 +125,12 @@ public class GameScreen implements Screen {
         while (iter.hasNext()) {
             Rectangle raindrop = iter.next();
             raindrop.y -= 200 * Gdx.graphics.getDeltaTime();
-            if (raindrop.y + 64 < 0)
+            if (raindrop.y + 64 < 0) {
                 iter.remove();
-            if (raindrop.overlaps(bucket)) {
+                rainMusic.stop();
+                game.setScreen(new GameOverScreen(game, dropsGathered));
+            }
+            if (raindrop.overlaps(bucket) && raindrop.y >= bucket.height - 10) {
                 dropsGathered++;
                 dropSound.play();
                 iter.remove();
@@ -155,6 +164,7 @@ public class GameScreen implements Screen {
     public void dispose() {
         dropImage.dispose();
         bucketImage.dispose();
+        background.dispose();
         dropSound.dispose();
         rainMusic.dispose();
     }
